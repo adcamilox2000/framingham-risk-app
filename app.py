@@ -40,16 +40,15 @@ st.warning("Herramienta educativa del curso Inteligencia de Datos. "
 
 pipe = load_pipeline()
 
-st.subheader("Hábitos")
-smoker = st.radio("¿Fumas actualmente?", ["No", "Sí"], horizontal=True) == "Sí"
-
 with st.form("riesgo"):
     st.subheader("Demografía")
     c1, c2 = st.columns(2)
     age = c1.number_input("Edad (años)", 20, 100, 45)
     male = c2.radio("Sexo", ["Mujer", "Hombre"], horizontal=True) == "Hombre"
-    education = st.selectbox("Educación", [1, 2, 3, 4],
-                             format_func=lambda x: f"Nivel {x}")
+    education = st.selectbox(
+        "Educación (códigos ordinales del estudio: 1 menor a 4 mayor escolaridad)",
+        [1, 2, 3, 4],
+        format_func=lambda x: f"Nivel {x}")
 
     st.subheader("Clínica")
     c1, c2 = st.columns(2)
@@ -65,15 +64,15 @@ with st.form("riesgo"):
     prevalentStroke = c1.radio("ACV previo", ["No", "Sí"], horizontal=True) == "Sí"
     BPMeds = c2.radio("Toma antihipertensivos", ["No", "Sí"], horizontal=True) == "Sí"
 
-    st.subheader("Hábito de fumar")
-    cigsPerDay = st.number_input("Cigarrillos por día", 0, 70, 10) if smoker else 0
+    st.subheader("Hábitos")
+    cigsPerDay = st.number_input("Cigarrillos por día (0 = no fuma)", 0, 70, 0)
 
     go = st.form_submit_button("Calcular riesgo")
 
 if go:
     row = pd.DataFrame([{
         "male": int(male), "age": float(age), "education": float(education),
-        "currentSmoker": int(smoker), "cigsPerDay": float(cigsPerDay),
+        "currentSmoker": int(cigsPerDay > 0), "cigsPerDay": float(cigsPerDay),
         "BPMeds": int(BPMeds), "prevalentStroke": int(prevalentStroke),
         "prevalentHyp": int(prevalentHyp), "diabetes": int(diabetes),
         "totChol": float(totChol), "sysBP": float(sysBP),
