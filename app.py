@@ -33,9 +33,29 @@ def load_pipeline():
     return Pipeline([("preprocessor", pre), ("model", model)])
 
 
-st.set_page_config(page_title="Riesgo Framingham", page_icon="🫀")
-st.title("🫀 Predictor de riesgo coronario (Framingham)")
-st.warning("Herramienta educativa del curso Inteligencia de Datos. "
+st.set_page_config(page_title="Riesgo Framingham", page_icon="🫀", layout="centered")
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+.block-container { max-width: 760px; padding-top: 2rem; }
+h1 { font-weight: 800; letter-spacing: -0.5px; }
+div[data-testid="stForm"] { border: 1px solid #e5e7eb; border-radius: 16px;
+    padding: 1.2rem 1.4rem; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+.stButton>button { background: #c0392b; color: white; border: none;
+    border-radius: 12px; padding: .6rem 1.6rem; font-weight: 700; width: 100%; }
+.stButton>button:hover { background: #a93226; color: white; }
+.result-card { border-radius: 16px; padding: 1.2rem 1.4rem; text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 1rem 0; }
+.result-card .big { font-size: 3rem; font-weight: 800; line-height: 1; }
+.bajo { background: #e8f5e9; color: #1b5e20; }
+.medio { background: #fff8e1; color: #7a5c00; }
+.alto { background: #fdecea; color: #8e1b1b; }
+</style>
+""", unsafe_allow_html=True)
+st.markdown("# 🫀 Predictor de riesgo coronario")
+st.markdown("**Estudio Framingham · horizonte a 10 años**")
+st.warning("Herramienta educativa del curso Inteligencia de Datos (Unicauca). "
           "NO es un diagnóstico médico: ante cualquier duda consulta a un profesional.")
 
 pipe = load_pipeline()
@@ -81,20 +101,21 @@ if go:
     }], columns=FEATURES)
     p = float(pipe.predict_proba(row)[0, 1])
 
-    st.metric("Probabilidad estimada a 10 años", f"{p:.1%}")
-    st.progress(min(max(p, 0.0), 1.0))
-
-    if p < PREVALENCE:
-        st.info(f"Por debajo de la prevalencia de la cohorte ({PREVALENCE:.2%}).")
-    elif p < 0.30:
-        st.info("Riesgo moderado frente a la cohorte.")
-    elif p < THRESHOLD:
-        st.warning("Riesgo elevado, aún bajo el umbral de alto riesgo del modelo.")
-    if p >= THRESHOLD:
-        st.error(f"Riesgo alto según el umbral F2-óptimo del modelo ({THRESHOLD:.2%}). "
-                 "Enfoque educativo: revisa hábitos y consulta a un profesional.")
+    if p < THRESHOLD:
+        nivel, msg, cls = (
+            ("BAJO", "Por debajo de la prevalencia de la cohorte.", "bajo")
+            if p < PREVALENCE else
+            ("MODERADO", "Riesgo moderado frente a la cohorte.", "medio") if p < 0.30 else
+            ("ELEVADO", "Riesgo elevado, aún bajo el umbral de alto riesgo del modelo.", "medio"))
     else:
-        st.success("Por debajo del umbral de alto riesgo del modelo.")
+        nivel, msg, cls = ("ALTO",
+            "Riesgo alto según el umbral F2-óptimo del modelo (42.73%). "
+            "Enfoque educativo: revisa hábitos y consulta a un profesional.", "alto")
+    st.markdown(
+        f'<div class="result-card {cls}"><div>Probabilidad estimada a 10 años</div>'
+        f'<div class="big">{p:.1%}</div><div><b>Riesgo {nivel}</b> · {msg}</div></div>',
+        unsafe_allow_html=True)
+    st.progress(min(max(p, 0.0), 1.0))
 
     st.caption("Nota de calibración: el modelo se entrenó con class_weight, "
                "así que sobreestima el riesgo absoluto. Úsalo como puntaje "
