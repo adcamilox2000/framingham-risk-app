@@ -40,6 +40,9 @@ st.warning("Herramienta educativa del curso Inteligencia de Datos. "
 
 pipe = load_pipeline()
 
+st.subheader("Hábitos")
+smoker = st.radio("¿Fumas actualmente?", ["No", "Sí"], horizontal=True) == "Sí"
+
 with st.form("riesgo"):
     st.subheader("Demografía")
     c1, c2 = st.columns(2)
@@ -62,9 +65,8 @@ with st.form("riesgo"):
     prevalentStroke = c1.radio("ACV previo", ["No", "Sí"], horizontal=True) == "Sí"
     BPMeds = c2.radio("Toma antihipertensivos", ["No", "Sí"], horizontal=True) == "Sí"
 
-    st.subheader("Hábitos")
-    smoker = st.radio("¿Fumas actualmente?", ["No", "Sí"], horizontal=True) == "Sí"
-    cigsPerDay = st.number_input("Cigarrillos por día", 0, 70, 10 if smoker else 0) if smoker else 0
+    st.subheader("Hábito de fumar")
+    cigsPerDay = st.number_input("Cigarrillos por día", 0, 70, 10) if smoker else 0
 
     go = st.form_submit_button("Calcular riesgo")
 
